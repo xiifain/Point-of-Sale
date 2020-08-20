@@ -7,96 +7,201 @@
 //
 
 import UIKit
-
-struct Product {
-    let name : String
-    let price : Int
-    let tagID : Int
+struct Product : Equatable {
+    
+    var name : String
+    var image: UIImage
+    var price : Int
+    var tagID : Int
 }
+
 
 class ViewController: UIViewController {
     
-    var productList : [Product] = []
+    var cart : [Product] = []
+    var anotherProductList : [Product] = [
+    Product(name: "Americano", image: #imageLiteral(resourceName: "diamond"), price: 250, tagID: 0),
+    Product(name: "Cappucino", image: #imageLiteral(resourceName: "Americano"), price: 250, tagID: 0),
+    Product(name: "Latte", image: #imageLiteral(resourceName: "Americano"), price: 250, tagID: 0),
+    Product(name: "Cold Brew", image: #imageLiteral(resourceName: "diamond"), price: 250, tagID: 0),
+    Product(name: "Nitro BRew", image: #imageLiteral(resourceName: "Americano"), price: 250, tagID: 0),
+    Product(name: "Americano", image: #imageLiteral(resourceName: "diamond"), price: 250, tagID: 0),
+    Product(name: "Cappucino", image: #imageLiteral(resourceName: "Americano"), price: 250, tagID: 0),
+    Product(name: "Latte", image: #imageLiteral(resourceName: "Americano"), price: 250, tagID: 0),
+    Product(name: "Cold Brew", image: #imageLiteral(resourceName: "diamond"), price: 250, tagID: 0),
+    Product(name: "Nitro BRew", image: #imageLiteral(resourceName: "Americano"), price: 250, tagID: 0),
+
+    ]
+
+    @IBOutlet weak var productCollectionView: UICollectionView!
     
-    @IBOutlet weak var nameTextField: UITextField!
+    @IBOutlet weak var addProductForm: UIView!
+    @IBOutlet weak var productName: UITextField!
+    @IBOutlet weak var productPrice: UITextField!
+    @IBOutlet weak var centreConstraint: NSLayoutConstraint!
     
-    @IBOutlet weak var priceTextField: UITextField!
-    @IBAction func addButton(_ sender: Any) {
+    @IBOutlet weak var testCart: UIButton!
+    
+    @IBAction func testFuncForCart(_ sender: UIButton){
         
-        if let name = nameTextField.text , let price = priceTextField.text{
+        print("HELLO")
+    }
+    @IBAction func addProduct(_ sender: UIButton) {
+        
+        if let name = productName.text , let price = productPrice.text {
             
-            let newProduct = Product(name: name, price: Int(price)!, tagID: productList.count+1)
+            anotherProductList.append(Product(name: name, image: #imageLiteral(resourceName: "Americano"), price: Int(price)!, tagID: anotherProductList.count + 1))
+            productCollectionView.reloadData()
+            showAddProductFormView()
+            productName.text?.removeAll()
+            productPrice.text?.removeAll()
             
-            productList.append(newProduct)
-            
-            print(productList)
-            
-            nameTextField.text?.removeAll()
-            priceTextField.text?.removeAll()
-            
-            tableView.reloadData()
-        }
-        else {
-            print("Didn't get any response")
         }
     }
-    
-    @IBOutlet weak var tableView: UITableView!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "product")
+        productCollectionView.delegate = self
+        productCollectionView.dataSource = self
+
+        productCollectionView.showsVerticalScrollIndicator = false
+
+        let xwiftTestButton = XwiftCircularButton(type: .custom, title: "", target: self, funcAction: #selector(showAddProductFormView), x: 150, y: 150, diameter: 75 , backgroundColor: .clear)
+        xwiftTestButton.setImage(#imageLiteral(resourceName: "Add Button"), for:.normal)
+        view.addSubview(xwiftTestButton)
+
+        xwiftTestButton.translatesAutoresizingMaskIntoConstraints = false
+        xwiftTestButton.setConstraints(right: -20, bottom: -20, width: 60, height: 60, view: view!)
+
+        xwiftTestButton.layer.shadowOpacity = 0.5
+        xwiftTestButton.layer.shadowOffset = CGSize(width: 0, height: 4)
+        xwiftTestButton.layer.shadowColor = UIColor.gray.cgColor
+        xwiftTestButton.layer.masksToBounds = false
         
-        tableView.footerView(forSection: productList.count)
+        addProductForm.backgroundColor = .white
+        addProductForm.layer.cornerRadius = 10.0
+        addProductForm.layer.masksToBounds = true
         
-        tableView.delegate = self
-        tableView.dataSource = self
+        addProductForm.layer.shadowOpacity = 0.4
+        addProductForm.layer.shadowOffset = CGSize(width: 3, height: 3)
+        addProductForm.layer.shadowColor = UIColor.gray.cgColor
+        addProductForm.layer.masksToBounds = false
         
+        testCart.layer.opacity = 0.0
+        
+        let image : UIImage = #imageLiteral(resourceName: "Americano")
+        
+        addProductForm.layer.backgroundColor = image.averageColor?.cgColor
+        
+                
     }
     
-}
+    @objc func showAddProductFormView() {
 
-extension ViewController : UITableViewDelegate {
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return productList.count
+        if centreConstraint.constant == -600 {
+            centreConstraint.constant = 0
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                
+                self.view.layoutIfNeeded()
+            })
+
+        }
+        else {
+            centreConstraint.constant = -600
+            
+            UIView.animate(withDuration: 0.1, animations: {
+                
+                self.view.layoutIfNeeded()
+                
+            })
+
+        }
+        
     }
 }
 
-extension ViewController : UITableViewDataSource {
+extension ViewController : XwiftCollectionViewCellDelegate {
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func addToCart_TouchUpInside(product: Product) {
+        self.cart.append(product)
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "product", for: indexPath)
+        if self.cart.count > 0 {
+            
+            UIView.animate(withDuration: 0.5, animations: {
+                
+                self.testCart.layer.opacity = 1.0
+                
+            })
+        }
         
-        let product = productList[indexPath.row]
-        cell.textLabel?.text = String(product.tagID)
+        
+    }
+}
+extension ViewController : UICollectionViewDataSource {
+
+    func collectionView(collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize
+    {
+        return CGSize(width:collectionView.frame.size.width, height:50)
+    }
+
+
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+
+        return anotherProductList.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+
+        var cell = UICollectionViewCell()
+
+        if let xwiftCell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as? XwiftCollectionViewCell {
+
+            xwiftCell.productName.text = anotherProductList[indexPath.row].name
+            xwiftCell.productPrice.text = String(anotherProductList[indexPath.row].price)
+            xwiftCell.productImage.image = anotherProductList[indexPath.row].image
+            xwiftCell.roundCorner(radius: 20.0, border: 1.0, borderColor: UIColor.clear.cgColor)
+            xwiftCell.layer.masksToBounds = false
+            xwiftCell.layer.shadowColor = UIColor.gray.cgColor
+            xwiftCell.layer.shadowOpacity = 0.7
+            xwiftCell.layer.shadowOffset = CGSize(width: 0, height: 2)
+            xwiftCell.delegate = self
+
+            cell = xwiftCell
+        }
         return cell
     }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        let product = productList[indexPath.row]
-        
-        print(product.name)
-        
-    }
-    
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            productList.remove(at: indexPath.row)
-            print(productList)
-            
-            tableView.reloadData()
-        }
-        else if editingStyle == .insert {
-            print("Something wrong")
-        }
-        
-    }
-    
+
 }
 
+extension ViewController : UICollectionViewDelegate {
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        
+    }
+
+}
+
+extension UIImage {
+    
+    var averageColor: UIColor? {
+        guard let inputImage = self.ciImage ?? CIImage(image: self) else { return nil }
+        guard let filter = CIFilter(name: "CIAreaAverage", parameters: [kCIInputImageKey: inputImage, kCIInputExtentKey: CIVector(cgRect: inputImage.extent)])
+            
+        else { return nil }
+        guard let outputImage = filter.outputImage else { return nil }
+
+        var bitmap = [UInt8](repeating: 0, count: 4)
+        let context = CIContext(options: [CIContextOption.workingColorSpace : kCFNull!])
+        let outputImageRect = CGRect(x: 0, y: 0, width: 1, height: 1)
+
+        context.render(outputImage, toBitmap: &bitmap, rowBytes: 4, bounds: outputImageRect, format: CIFormat.RGBA8, colorSpace: nil)
+
+        return UIColor(red: CGFloat(bitmap[0]) / 255, green: CGFloat(bitmap[1]) / 255, blue: CGFloat(bitmap[2]) / 255, alpha: CGFloat(bitmap[3]) / 255)
+    }
+}
 
 
